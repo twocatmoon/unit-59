@@ -1,0 +1,23 @@
+.linkList {
+    display: flex;
+    align-items: center;
+}
+
+.linkList a {
+    display: inline-block;
+    color: var(--fontColorAlt);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.linkList a:hover {
+    opacity: 0.65;
+}
+
+.linkList a:not(:last-child) {
+    margin-right: 0.75rem;
+}
+
+.marginRight {
+    margin-right: 1rem;
+}

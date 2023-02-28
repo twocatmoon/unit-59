@@ -1,0 +1,20 @@
+.modal {
+    padding: var(--paddingMd);
+    background-color: var(--bgColor);
+    border-radius: var(--borderRadius);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 20%);
+    min-width: 300px;
+    max-width: 650px;
+}
+
+.modal header {
+    display: flex;
+    margin-bottom: var(--paddingSm);
+    white-space: nowrap;
+    align-items: center;
+}
+
+.modal header aside {
+    margin-left: auto;
+    padding-left: var(--paddingMd);
+}

@@ -1,0 +1,12 @@
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header aside {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
