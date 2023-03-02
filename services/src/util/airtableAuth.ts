@@ -10,6 +10,7 @@ export interface User {
         email?: string
         password?: string
         role?: 'User' | 'Administrator'
+        name?: string
     }
 }
 
@@ -17,7 +18,7 @@ export async function getUser (base: Airtable.Base, email: string) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_PERSON_TABLE!).select({
             filterByFormula: `SEARCH("${email}",{${USER.email}})`,
-            fields: [ USER.password ]
+            fields: Object.values(USER)
         }).all() as never as User[]
 
         if (result.length === 0) {
@@ -47,7 +48,7 @@ export async function setUserPassword (base: Airtable.Base, id: string, password
             {
                 id,
                 fields: {
-                    password: hashedAndSaltedPassword
+                    [ USER.password ]: hashedAndSaltedPassword
                 }
             }
         ]) as never as User[]
@@ -80,8 +81,8 @@ export async function verifyUserPassword (base: Airtable.Base, email: string, pa
     return user
 }
 
-export async function generateToken (id: string): Promise<string> {
-    return jwt.sign({ id }, process.env.JWT_TOKEN_SECRET!)
+export async function generateToken (user: User): Promise<string> {
+    return jwt.sign({ ...user }, process.env.JWT_TOKEN_SECRET!)
 }
 
 export async function decodeToken (token: string): Promise<User> {
@@ -91,6 +92,25 @@ export async function decodeToken (token: string): Promise<User> {
             resolve(result as User)
         })
     })
+}
+
+export async function verifyToken (token: string, requiresAdmin?: boolean) {
+    let decodedToken: User
+    try {
+        decodedToken = await decodeToken(token)
+    } catch (error: any) {
+        throw error
+    }
+
+    if (!decodedToken) {
+        throw new Error('Invalid token.')
+    }
+
+    if (requiresAdmin && decodedToken.fields.role !== 'Administrator') {
+        throw new Error('You do not have permission to perform this action.')
+    }
+
+    return decodedToken
 }
 
 async function hashPassword (password: string): Promise<string> {

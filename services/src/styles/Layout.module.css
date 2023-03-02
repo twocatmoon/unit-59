@@ -6,6 +6,10 @@
     min-width: 100%;
 }
 
+.main.isFormPage {
+    background-color: var(--primaryColor);
+}
+
 .main > .container {
     padding: var(--paddingLg) 6px;
     flex: 1;
@@ -21,6 +25,10 @@
     display: flex;
     align-items: center;
     padding: var(--paddingSm) 6px;
+}
+
+.main.isFormPage .header > div {
+    padding: var(--paddingMd) 6px;
 }
 
 .header > div h1 {
@@ -49,6 +57,18 @@
     margin-top: auto;
     font-size: var(--fontSizeSm);
     color: var(--fontColorAlt);
+}
+
+.footer .container {
+    display: flex;
+}
+
+.footer .container p:last-child {
+    margin-left: auto;
+}
+
+.main.isFormPage .footer {
+    color: var(--primaryColorInverted);
 }
 
 .modal {

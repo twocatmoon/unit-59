@@ -1,0 +1,58 @@
+.boxForm {
+    width: 450px;
+}
+
+.box {
+    border-radius: var(--borderRadiusLg);
+    background-color: var(--bgColor);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    padding: var(--paddingLg);
+}
+
+.boxForm header h1 {
+    line-height: 1;
+}
+
+.boxForm header p {
+    margin-top: 0.35em;
+    color: var(--fontColorAlt);
+}
+
+.content > fieldset,
+.content > p {
+    margin: var(--paddingMd) 0;
+}
+
+.content > fieldset input,
+.content > fieldset select {
+    width: 100%;
+    flex: 1;
+}
+
+.content > fieldset:last-child,
+.content > p:last-child {
+    margin-bottom: 0;
+}
+
+.content > p {
+    font-size: var(--fontSizeSm);
+    line-height: 1.4;
+}
+
+.content > p[data-center] {
+    text-align: center;
+    font-size: var(--fontSizeSm);
+    color: var(--fontColorAlt);
+}
+
+.boxForm footer {
+    margin-top: 1rem;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

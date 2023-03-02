@@ -4,11 +4,12 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === 'POST') {
+        const body = JSON.parse(req.body)
         const base = getBase(process.env.AIRTABLE_API_KEY!)
 
         let user: User
         try {
-            user = await getUser(base, req.query.email as string)
+            user = await getUser(base, body.email as string)
 
             if (user.fields.password) {
                 return res.status(500).json({
@@ -24,7 +25,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         try {
-            await setUserPassword(base, user.id, req.body.password)
+            await setUserPassword(base, user.id, body.password)
         } catch (error: any) {
             return res.status(500).json({
                 ok: false,
@@ -32,12 +33,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             })
         }
 
-        const token = await generateToken(user.id)
+        const token = await generateToken(user)
+        delete user.fields.password
 
-        res.status(200).json({
+        return res.status(200).json({
             ok: true,
             data: {
-                token
+                token,
+                user,
             }
         })
     }

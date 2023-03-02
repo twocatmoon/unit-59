@@ -5,10 +5,13 @@ import { format } from 'date-fns'
 import { Person, Availability, DutySchedule, findPerson, findAvailablePeopleForWeek, mapResultFieldsToSource } from '@/util/airtable'
 import Modal, { modalEvents } from '@/components/Modal'
 import Header from '@/components/Header'
-import { normalizeDate } from '@/util/normalizeDate'
 import BoxButtonContainer from '@/components/BoxButtonContainer'
 import Footer from '@/components/Footer'
 import { DUTY_SCHEDULE } from '@/util/fieldMappings'
+import { useStore } from '@/stores/auth'
+import { formatWeek } from '@/util/formatWeek'
+
+const NUM_CREW_PER_SCHEDULE = 4
 
 interface PageData {
     people: Person[]
@@ -17,6 +20,7 @@ interface PageData {
 }
 
 export default function DutySchedulePage () {
+    const [ authState ] = useStore()
     const [ isEditing, canEdit, setEditMode ] = useEditMode()
     const [ pageData, dispatchPageData ] = useState<null | PageData>(null)
     const [ openModal, setOpenModal ] = useState<'' | 'set_coxswain' | 'set_crew'>('')
@@ -121,11 +125,6 @@ export default function DutySchedulePage () {
         modalEvents.trigger('close')
     }
 
-    const formatWeek = (week: string) => {
-        const date = normalizeDate(week)
-        return format(date, 'MMMM dd')
-    }
-
     const isPersonSelected = (personId: Person[ 'id' ]) => {
         const schedule = pageData!.dutySchedules.find((schedule: DutySchedule) => schedule.fields.week === currentWeek)
         if (!schedule) return false
@@ -141,7 +140,8 @@ export default function DutySchedulePage () {
 
         try {
             await fetch('/api/schedules/duty', {
-                method: 'POST',
+                method: 'POST', 
+                headers: { 'X-Auth-Token': authState.token },
                 body: JSON.stringify({
                     data: pageData?.dutySchedules.map((schedule: DutySchedule) => {
                         return {
@@ -377,10 +377,10 @@ export default function DutySchedulePage () {
                                         <button data-type-label className={'--placeholder'} />
                                 }
                                 {
-                                    ((schedule.fields.crew?.length || 0) < 3 && isEditing) && (() => {
+                                    ((schedule.fields.crew?.length || 0) < NUM_CREW_PER_SCHEDULE && isEditing) && (() => {
                                         const buttons = []
                                         let i = schedule.fields.crew?.length || 0
-                                        while (buttons.length < 3 - (schedule.fields.crew?.length || 0)) {
+                                        while (buttons.length < NUM_CREW_PER_SCHEDULE - (schedule.fields.crew?.length || 0)) {
                                             buttons.push(<button data-type-control key={i} onClick={() => openSelectCrewMemberModal(schedule.fields.week!, i)}><i>+</i> Add Crew</button>)
                                             i++
                                         }

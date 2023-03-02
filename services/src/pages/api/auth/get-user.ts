@@ -3,11 +3,11 @@ import { getUser } from '@/util/airtableAuth'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-    if (req.method === 'POST') {
+    if (req.method === 'GET') {
         const base = getBase(process.env.AIRTABLE_API_KEY!)
 
         try {
-            const user = await getUser(base, req.body.email as string)
+            const user = await getUser(base, req.query.email as string)
 
             res.status(200).json({
                 ok: true,

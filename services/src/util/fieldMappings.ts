@@ -14,6 +14,7 @@ export const AVAILABILITY = {
     fromDate: availabilityFields[ 1 ],
     toDate: availabilityFields[ 2 ],
     availability: availabilityFields[ 3 ],
+    personId: availabilityFields[ 4 ],
 } as const
 
 const dutyScheduleFields = process.env.NEXT_PUBLIC_DUTY_SCHEDULE_FIELD_MAPPINGS!.split(',')
@@ -39,4 +40,5 @@ export const USER = {
     email: userFields[ 0 ],
     password: userFields[ 1 ],
     role: userFields[ 2 ],
+    name: userFields[ 3 ],
 } as const

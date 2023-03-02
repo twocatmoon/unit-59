@@ -67,6 +67,7 @@ export function getBase (key: string) {
 export async function getPeople (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_PERSON_TABLE!).select({
+            view: process.env.NEXT_PUBLIC_PERSON_VIEW!,
             fields: Object.values(PERSON)
         }).all() as never as Person[]
 
@@ -95,6 +96,51 @@ export async function getAvailability (base: Airtable.Base) {
     }
 }
 
+export async function getAvailabilityForPerson (base: Airtable.Base, personId: string) {
+    try {
+        const result = await base(process.env.NEXT_PUBLIC_AVAILABILITY_TABLE!).select({
+            filterByFormula: `SEARCH("${personId}",{${AVAILABILITY.personId}})`,
+            view: process.env.NEXT_PUBLIC_AVAILABILITY_VIEW!,
+            fields: Object.values(AVAILABILITY)
+        }).all() as never as Availability[]
+
+        return result.map(record => {
+            const newRecord = {
+                ...record,
+                fields: mapSourceFieldsToResult(record.fields, AVAILABILITY)
+            }
+            delete newRecord.fields.personId
+            return newRecord
+        })
+    } catch (error: any) {
+        throw error
+    }
+}
+
+export async function insertAvailability (base: Airtable.Base, personId: string, fromDate: string, toDate?: string) {
+    const fields = {
+        [ AVAILABILITY.person ]: [ personId ],
+        [ AVAILABILITY.fromDate ]: fromDate,
+        [ AVAILABILITY.availability ]: 'Unavailable',
+    }
+
+    if (toDate) fields[ AVAILABILITY.toDate ] = toDate
+
+    try {
+        await base(process.env.NEXT_PUBLIC_AVAILABILITY_TABLE!).create([ { fields } ]) as never as DutySchedule[]
+    } catch (error: any) {
+        throw error
+    }
+}
+
+export async function deleteAvailability (base: Airtable.Base, recordId: string) {
+    try {
+        await base(process.env.NEXT_PUBLIC_AVAILABILITY_TABLE!).destroy(recordId) as never as DutySchedule[]
+    } catch (error: any) {
+        throw error
+    }
+}
+
 export async function getDutySchedules (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_DUTY_SCHEDULE_TABLE!).select({
@@ -111,7 +157,7 @@ export async function getDutySchedules (base: Airtable.Base) {
     }
 }
 
-export async function createDutySchedules (base: Airtable.Base, records: DutySchedule[]) {
+export async function createDutySchedules (base: Airtable.Base, records: any[]) {
     try {
         await base(process.env.NEXT_PUBLIC_DUTY_SCHEDULE_TABLE!).create(records) as never as DutySchedule[]
     } catch (error: any) {
@@ -119,7 +165,7 @@ export async function createDutySchedules (base: Airtable.Base, records: DutySch
     }
 }
 
-export async function updateDutySchedules (base: Airtable.Base, records: DutySchedule[]) {
+export async function updateDutySchedules (base: Airtable.Base, records: any[]) {
     try {
         await base(process.env.NEXT_PUBLIC_DUTY_SCHEDULE_TABLE!).update(records) as never as DutySchedule[]
     } catch (error: any) {
@@ -133,11 +179,27 @@ export async function getTrainingSchedules (base: Airtable.Base) {
             view: process.env.NEXT_PUBLIC_TRAINING_SCHEDULE_VIEW!,
             fields: Object.values(TRAINING_SCHEDULE),
         }).all() as never as DutySchedule[]
-
+        
         return result.map(record => ({
             ...record,
             fields: mapSourceFieldsToResult(record.fields, TRAINING_SCHEDULE)
         }))
+    } catch (error: any) {
+        throw error
+    }
+}
+
+export async function createTrainingSchedules (base: Airtable.Base, records: any[]) {
+    try {
+        await base(process.env.NEXT_PUBLIC_TRAINING_SCHEDULE_TABLE!).create(records) as never as TrainingSchedule[]
+    } catch (error: any) {
+        throw error
+    }
+}
+
+export async function updateTrainingSchedules (base: Airtable.Base, records: any[]) {
+    try {
+        await base(process.env.NEXT_PUBLIC_TRAINING_SCHEDULE_TABLE!).update(records) as never as TrainingSchedule[]
     } catch (error: any) {
         throw error
     }

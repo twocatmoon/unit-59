@@ -9,10 +9,12 @@
     --fontColorAlt: #4D4D4D;
     --fontColorFaded: #A5A5A5;
     --borderColor: #DDE1E3;
+    --borderColorDark: #A5A5A5;
     --fontSizeSm: 14px;
     --fontSizeMd: 16px;
     --fontSizeLg: 24px;
     --borderRadius: 5px;
+    --borderRadiusLg: 10px;
     --buttonHeightSm: 34px;
     --buttonHeightMd: 44px;
     --paddingSm: 12px;
@@ -39,6 +41,12 @@ body {
 
 body {
     color: var(--fontColor);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--borderColor);
+    margin: var(--paddingMd) 0;
 }
 
 /* #endregion */
@@ -139,6 +147,20 @@ button[data-type-primary] {
 button[data-type-primary][disabled] {
     opacity: 0.65;
     pointer-events: none;
+}
+
+button[data-type-primary][data-large] {
+    height: var(--buttonHeightMd);
+    min-width: 100px;
+    padding: 0 1.5rem;
+}
+
+button[data-type-primary][data-dangerous] {
+    background-color: #DD2C5A;
+}
+
+button[data-type-primary]:hover {
+    filter: brightness(0.925);
 }
 
 button[data-type-control] {
@@ -439,6 +461,10 @@ table tbody th.--alignCenter {
     padding: var(--paddingSm);
 }
 
+table tbody td:first-child {
+    padding: var(--paddingSm);
+}
+
 table thead th.--alignCenter {
     text-align: center;
 }
@@ -457,6 +483,89 @@ table tbody button[data-type-label] {
 
 table tr[data-alt-row=true] {
     background-color: var(--bgColorAlt);
+}
+
+table td[data-flex] {
+    display: flex;
+    align-items: center;
+}
+
+table td[data-flex] aside {
+    margin-left: auto;
+}
+
+/* #endregion */
+
+
+
+/* #region Forms */
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+fieldset > fieldset:not(:last-of-type) {
+    margin-top: 10px;
+}
+
+fieldset > *:not(:last-child) {
+    margin-bottom: var(--paddingSm);
+}
+
+fieldset[data-group] {
+    display: flex;
+}
+
+fieldset[data-group] > *:not(:last-child) {
+    margin-right: 10px;
+    margin-bottom: 0 !important;
+}
+
+fieldset[data-group] > button {
+    white-space: nowrap;
+}
+
+input,
+select {
+    border-radius: var(--borderRadius);
+    border: solid 1px var(--borderColorDark);
+    height: var(--buttonHeightSm);
+    padding: 0 0.65rem;
+    font-family: inherit;
+    font-size: var(--fontSizeMd);
+    color: inherit;
+    margin: 0;
+}
+
+input[data-large],
+select[data-large] {
+    height: var(--buttonHeightMd);
+    padding: 0 1rem;
+}
+
+input[data-wide],
+select[data-wide] {
+    width: 100%;
+}
+
+input::placeholder {
+    color: var(--fontColorAlt);
+}
+
+input[data-large]::placeholder {
+    color: var(--fontColorAlt);
+    font-size: var(--fontSizeSm);
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
+label > span {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: var(--fontSizeSm);
+    color: var(--fontColorAlt);
 }
 
 /* #endregion */

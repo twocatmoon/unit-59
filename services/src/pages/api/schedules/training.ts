@@ -1,4 +1,5 @@
-import { getAvailability, getBase, getTrainingSchedules, getPeople } from '@/util/airtable'
+import { cleanData, createTrainingSchedules, TrainingSchedule, getAvailability, getBase, getTrainingSchedules, getPeople, updateTrainingSchedules } from '@/util/airtable'
+import { decodeToken, User, verifyToken } from '@/util/airtableAuth'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 async function get (_req: NextApiRequest, res: NextApiResponse) {
@@ -8,7 +9,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         people = await getPeople(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -18,7 +19,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         availability = await getAvailability(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -28,7 +29,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         trainingSchedules = await getTrainingSchedules(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -37,9 +38,85 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     res.status(200).json({
         ok: true,
         data: {
-            people,
-            availability,
-            trainingSchedules,
+            people: people?.map(record => cleanData(record)),
+            availability: availability?.map(record => cleanData(record)),
+            trainingSchedules: trainingSchedules?.map(record => cleanData(record)),
+        }
+    })
+}
+
+async function post (req: NextApiRequest, res: NextApiResponse) {
+    const token = req.headers[ 'x-auth-token' ] as string
+    
+    let decodedToken: User
+    try {
+        decodedToken = await verifyToken(token, true)
+    } catch (error: any) {
+        return res.status(500).json({
+            ok: false,
+            error: error.message
+        })
+    }
+
+    const base = getBase(process.env.AIRTABLE_API_KEY!)
+
+    let data: TrainingSchedule[] = []
+    try {
+        const result = JSON.parse(req.body)
+        data = result.data
+    } catch (error: any) {
+        return res.status(500).json({
+            ok: false,
+            error: error.message
+        })
+    }
+
+    let numCallsRequired = 0
+
+    const existingRecords = data.filter(record => record.id).map(record => cleanData(record))
+    numCallsRequired = Math.ceil(existingRecords.length / 10)
+
+    for (let i = 0; i < numCallsRequired; i++) {
+        const recordsToUpdate = existingRecords.slice(i * 10, (i + 1) * 10)
+        try {
+            await updateTrainingSchedules(base, recordsToUpdate)
+        } catch (error: any) {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            })
+        }
+    }
+
+    const newRecords = data.filter(record => !record.id).map(record => cleanData(record))
+    numCallsRequired = Math.ceil(newRecords.length / 10)
+
+    for (let i = 0; i < numCallsRequired; i++) {
+        const recordsToUpdate = newRecords.slice(i * 10, (i + 1) * 10)
+        try {
+            await createTrainingSchedules(base, recordsToUpdate)
+        } catch (error: any) {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            })
+        }
+    }
+
+    let trainingSchedules
+    try {
+        trainingSchedules = await getTrainingSchedules(base)
+    } catch (error: any) {
+        return res.status(500).json({
+            ok: false,
+            error: error.message
+        })
+    }
+
+    res.status(200).json({
+        ok: true,
+        data: {
+            trainingSchedules: trainingSchedules?.map(record => cleanData(record)),
         }
     })
 }
@@ -48,4 +125,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === 'GET') {
         return get(req, res)
     }
+
+    if (req.method === 'POST') {
+        return post(req, res)
+    }
+
+    return res.status(500).json({ 
+        ok: false, 
+        error: 'Invalid request method'
+    })
 }

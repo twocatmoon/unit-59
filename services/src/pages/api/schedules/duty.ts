@@ -1,4 +1,5 @@
 import { cleanData, createDutySchedules, DutySchedule, getAvailability, getBase, getDutySchedules, getPeople, updateDutySchedules } from '@/util/airtable'
+import { decodeToken, User, verifyToken } from '@/util/airtableAuth'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 async function get (_req: NextApiRequest, res: NextApiResponse) {
@@ -8,7 +9,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         people = await getPeople(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -18,7 +19,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         availability = await getAvailability(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -28,7 +29,7 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
     try {
         dutySchedules = await getDutySchedules(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -45,6 +46,18 @@ async function get (_req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function post (req: NextApiRequest, res: NextApiResponse) {
+    const token = req.headers[ 'x-auth-token' ] as string
+    
+    let decodedToken: User
+    try {
+        decodedToken = await verifyToken(token, true)
+    } catch (error: any) {
+        return res.status(500).json({
+            ok: false,
+            error: error.message
+        })
+    }
+
     const base = getBase(process.env.AIRTABLE_API_KEY!)
 
     let data: DutySchedule[] = []
@@ -52,7 +65,7 @@ async function post (req: NextApiRequest, res: NextApiResponse) {
         const result = JSON.parse(req.body)
         data = result.data
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })
@@ -68,7 +81,7 @@ async function post (req: NextApiRequest, res: NextApiResponse) {
         try {
             await updateDutySchedules(base, recordsToUpdate)
         } catch (error: any) {
-            res.status(500).json({
+            return res.status(500).json({
                 ok: false,
                 error: error.message
             })
@@ -83,7 +96,7 @@ async function post (req: NextApiRequest, res: NextApiResponse) {
         try {
             await createDutySchedules(base, recordsToUpdate)
         } catch (error: any) {
-            res.status(500).json({
+            return res.status(500).json({
                 ok: false,
                 error: error.message
             })
@@ -94,7 +107,7 @@ async function post (req: NextApiRequest, res: NextApiResponse) {
     try {
         dutySchedules = await getDutySchedules(base)
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             ok: false,
             error: error.message
         })

@@ -1,10 +1,15 @@
-import styles from '@/styles/Home.module.css'
 import Layout from '@/components/Layout'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 export default function Home () {
+    const router = useRouter()
+
+    useEffect(() => {
+        router.push('/schedules/duty')
+    }, [])
+
     return (
-        <Layout title='Page Title' className={styles.home}>
-            TODO: home page
-        </Layout>
+        <Layout title='Welcome' />
     )
 }
