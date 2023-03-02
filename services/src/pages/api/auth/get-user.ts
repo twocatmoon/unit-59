@@ -9,7 +9,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         try {
             const user = await getUser(base, req.query.email as string)
 
-            res.status(200).json({
+            return res.status(200).json({
                 ok: true,
                 data: {
                     hasSetPassword: !!user.fields.password
