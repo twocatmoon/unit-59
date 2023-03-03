@@ -11,9 +11,15 @@
 }
 
 .main > .container {
-    padding: var(--paddingLg) 6px;
+    padding: var(--paddingLg) 12px;
     flex: 1;
     width: 100%;
+}
+
+@media (hover: none) {
+    .main > .container {
+        padding: var(--paddingSm) 8px;
+    }
 }
 
 .header {
@@ -33,10 +39,50 @@
 
 .header > div h1 {
     margin-right: var(--paddingMd);
+    white-space: nowrap;
 }
 
 .header > div aside {
     margin-left: auto;
+}
+
+.header > div aside > p > * {
+    white-space: nowrap;
+}
+
+.header > div aside > p:last-child {
+    display: none;
+    text-align: right;
+}
+
+@media (hover: none) {
+    .header > div {
+        flex-wrap: wrap;
+    }
+
+    .header > div h1 {
+        width: 100%;
+        text-align: center;
+        font-size: var(--fontSizeMd);
+    }
+
+    .header > div nav {
+        padding-right: var(--paddingMd);
+        flex: 1;
+    }
+
+    .header > div nav button {
+        width: 100%;
+        text-align: left;
+    }
+
+    .header > div aside > p:first-child {
+        display: none;
+    }
+
+    .header > div aside > p:last-child {
+        display: block;
+    }
 }
 
 .header > nav {
@@ -57,6 +103,12 @@
     margin-top: auto;
     font-size: var(--fontSizeSm);
     color: var(--fontColorAlt);
+}
+
+@media (hover: none) {
+    .footer {
+        padding: var(--paddingSm) 0;
+    }
 }
 
 .footer .container {

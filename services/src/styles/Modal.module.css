@@ -5,6 +5,17 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 20%);
     min-width: 300px;
     max-width: 650px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (hover: none) {
+    .modal {
+        min-width: 0;
+        width: calc(100vw - 8px);
+        height: calc(100% - 8px);
+        padding: var(--paddingSm);
+    }
 }
 
 .modal header {
@@ -17,4 +28,9 @@
 .modal header aside {
     margin-left: auto;
     padding-left: var(--paddingMd);
+}
+
+.modal > div {
+    flex: 1;
+    position: relative;
 }

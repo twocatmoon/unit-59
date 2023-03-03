@@ -155,6 +155,12 @@ button[data-type-primary][data-large] {
     padding: 0 1.5rem;
 }
 
+@media (hover: none) {
+    button[data-type-primary][data-large] {
+        min-width: 0;
+    }
+}
+
 button[data-type-primary][data-dangerous] {
     background-color: #DD2C5A;
 }
@@ -443,6 +449,12 @@ table thead th {
     text-align: left;
 }
 
+@media (hover: none) {
+    table th {
+        display: none;
+    }
+}
+
 table tbody th,
 table tbody td {
     padding: var(--paddingSm) 0;
@@ -465,6 +477,17 @@ table tbody td:first-child {
     padding: var(--paddingSm);
 }
 
+@media (hover: none) {
+    table tbody td:first-child,
+    table tbody td:first-of-type {
+        padding-left: 0 !important;
+    }
+
+    table tbody td:last-child {
+        padding-right: 0 !important;
+    }
+}
+
 table thead th.--alignCenter {
     text-align: center;
 }
@@ -479,6 +502,14 @@ table tbody button[data-type-label] {
     min-width: 115px;
     margin: 2px 0;
     white-space: nowrap;
+}
+
+@media (hover: none) {
+    table tbody button[data-type-control],
+    table tbody button[data-type-label] {
+        display: block;
+        margin-right: 0 !important;
+    }
 }
 
 table tr[data-alt-row=true] {
@@ -504,6 +535,21 @@ fieldset {
     border: none;
     padding: 0;
     margin: 0;
+}
+
+@media (hover: none) {
+    fieldset {
+        width: 100%;
+    }
+
+    fieldset > *:not(button) {
+        flex: 1;
+    }
+
+    fieldset:not([data-group]) input,
+    fieldset:not([data-group]) button {
+        width: 100%;
+    }
 }
 
 fieldset > fieldset:not(:last-of-type) {

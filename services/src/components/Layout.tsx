@@ -74,18 +74,24 @@ export default function Layout (props: LayoutProps) {
                                         <Link href='/schedules/training'>
                                             <button data-type-nav data-active={router.asPath === '/schedules/training'}>Training Schedule</button>
                                         </Link>
-                                        <Link href='/manage-availability'>
+                                        <Link href={(authState.ready && authState.user) ? '/manage-availability' : '/auth/sign-in'}>
                                             <button data-type-nav data-active={router.asPath === '/manage-availability'}>Manage Availability</button>
                                         </Link>
                                     </nav>
                                     <aside>
                                         {
                                             authState.user && (
-                                                <p>
-                                                    <span style={{fontSize: '90%'}}>{authState.user.fields.name}</span>
-                                                    &nbsp;|&nbsp;
-                                                    <button data-type-nav-link onClick={signOut}>Sign Out</button>
-                                                </p>
+                                                <>
+                                                    <p>
+                                                        <span style={{fontSize: '90%'}}>{authState.user.fields.name}</span>
+                                                        &nbsp;|&nbsp;
+                                                        <button data-type-nav-link onClick={signOut}>Sign Out</button>
+                                                    </p>
+                                                    <p>
+                                                        <span style={{fontSize: '90%'}}>{authState.user.fields.name}</span><br />
+                                                        <button data-type-nav-link onClick={signOut}>Sign Out</button>
+                                                    </p>
+                                                </>
                                             )
                                         }
                                         {

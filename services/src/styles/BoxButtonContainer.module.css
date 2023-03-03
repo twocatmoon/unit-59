@@ -10,3 +10,26 @@
     margin: 0.25rem;
     width: calc(50% - 0.5rem);
 }
+
+@media (hover: none) {
+    .boxButtonContainer {
+        width: auto;
+        margin: 0;
+        display: block;
+        min-width: 0;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .boxButtonContainer button {
+        box-sizing: border-box;
+        margin: 0.25rem 0;
+        width: 100%;
+    }
+}
