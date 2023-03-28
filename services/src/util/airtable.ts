@@ -1,5 +1,6 @@
 import Airtable from 'airtable'
 import { AVAILABILITY, DUTY_SCHEDULE, PERSON, TRAINING_SCHEDULE, USER } from './fieldMappings'
+import { valuesUnique } from './valuesUnique'
 
 
 
@@ -68,14 +69,26 @@ export async function getPeople (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_PERSON_TABLE!).select({
             view: process.env.NEXT_PUBLIC_PERSON_VIEW!,
-            fields: Object.values(PERSON)
+            fields: valuesUnique(PERSON)
         }).all() as never as Person[]
 
-        return result.map(record => ({
-            ...record,
-            fields: mapSourceFieldsToResult(record.fields, PERSON)
-        }))
+        return result.map(record => {
+            const canCoxswainRawField = (
+                (record.fields[PERSON.canCoxswain as keyof Person['fields']] as any as string[]) ||
+                []
+            )
+            const canCoxswain = canCoxswainRawField.includes(process.env.NEXT_PUBLIC_COXSWAIN_LEVEL!)
+
+            return {
+                ...record,
+                fields: {
+                    ...mapSourceFieldsToResult(record.fields, PERSON),
+                    canCoxswain,
+                }
+            }
+        })
     } catch (error: any) {
+        console.log('error', error)
         throw error
     }
 }
@@ -84,7 +97,7 @@ export async function getAvailability (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_AVAILABILITY_TABLE!).select({
             view: process.env.NEXT_PUBLIC_AVAILABILITY_VIEW!,
-            fields: Object.values(AVAILABILITY)
+            fields: valuesUnique(AVAILABILITY)
         }).all() as never as Availability[]
 
         return result.map(record => ({
@@ -101,7 +114,7 @@ export async function getAvailabilityForPerson (base: Airtable.Base, personId: s
         const result = await base(process.env.NEXT_PUBLIC_AVAILABILITY_TABLE!).select({
             filterByFormula: `SEARCH("${personId}",{${AVAILABILITY.personId}})`,
             view: process.env.NEXT_PUBLIC_AVAILABILITY_VIEW!,
-            fields: Object.values(AVAILABILITY)
+            fields: valuesUnique(AVAILABILITY)
         }).all() as never as Availability[]
 
         return result.map(record => {
@@ -145,7 +158,7 @@ export async function getDutySchedules (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_DUTY_SCHEDULE_TABLE!).select({
             view: process.env.NEXT_PUBLIC_DUTY_SCHEDULE_VIEW!,
-            fields: Object.values(DUTY_SCHEDULE),
+            fields: valuesUnique(DUTY_SCHEDULE),
         }).all() as never as DutySchedule[]
 
         return result.map(record => ({
@@ -166,6 +179,8 @@ export async function createDutySchedules (base: Airtable.Base, records: any[]) 
 }
 
 export async function updateDutySchedules (base: Airtable.Base, records: any[]) {
+    console.log(records)
+    
     try {
         await base(process.env.NEXT_PUBLIC_DUTY_SCHEDULE_TABLE!).update(records) as never as DutySchedule[]
     } catch (error: any) {
@@ -177,7 +192,7 @@ export async function getTrainingSchedules (base: Airtable.Base) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_TRAINING_SCHEDULE_TABLE!).select({
             view: process.env.NEXT_PUBLIC_TRAINING_SCHEDULE_VIEW!,
-            fields: Object.values(TRAINING_SCHEDULE),
+            fields: valuesUnique(TRAINING_SCHEDULE),
         }).all() as never as DutySchedule[]
         
         return result.map(record => ({

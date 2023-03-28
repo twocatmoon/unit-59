@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 import { TRAINING_SCHEDULE } from '@/util/fieldMappings'
 import { useStore } from '@/stores/auth'
 import { formatWeek } from '@/util/formatWeek'
+import { If } from '@twocatmoon/react-template-helpers'
 
 const NUM_CREW_PER_SCHEDULE = 4
 
@@ -69,7 +70,7 @@ export default function TrainingSchedulePage () {
 
     const addWeek = () => {
         const schedules = JSON.parse(JSON.stringify(pageData!.trainingSchedules))
-        const lastSchedule = schedules[ schedules.length - 1 ]
+        const lastSchedule = schedules[ schedules.length - 1 ] || { fields: { week: format(new Date(), 'yyyy-MM-dd') } }
         const newSchedule = { fields: {} } as TrainingSchedule
 
         const nextWeek = new Date(lastSchedule.fields.week)
@@ -94,7 +95,7 @@ export default function TrainingSchedulePage () {
             if (!schedule.fields.coxswain) schedule!.fields.coxswain = []
             schedule!.fields.coxswain = [ id ]
         } else {
-            if (schedule.fields.coxswain) delete schedule.fields.coxswain
+            schedule.fields.coxswain = []
         }
 
         setPageData({
@@ -121,7 +122,6 @@ export default function TrainingSchedulePage () {
             }
         } else {
             if (schedule.fields.crew && currentIndex < schedule.fields.crew.length) schedule.fields.crew.splice(currentIndex, 1)
-            if (schedule.fields.crew && schedule.fields.crew.length === 0) delete schedule.fields.crew
         }
 
         setPageData({
@@ -364,41 +364,8 @@ export default function TrainingSchedulePage () {
                             </td>
                             <td>
                                 {
-                                    !isEditing && schedule.fields.coxswain?.length && schedule.fields.coxswain.map((personId) => (
-                                        <button 
-                                            key={personId + '_view'}
-                                            data-type-label
-                                            data-label-color={findPerson(personId, pageData.people)!.fields.labelColor || ''}
-                                        >
-                                            {findPerson(personId, pageData.people)!.fields.name}
-                                        </button>
-                                    ))
-                                }
-                                {
-                                    isEditing && schedule.fields.coxswain?.length && schedule.fields.coxswain.map((personId) => (
-                                        <button 
-                                            key={personId + '_edit'}
-                                            data-type-control
-                                            data-label-color={findPerson(personId, pageData.people)!.fields.labelColor || ''}
-                                            onClick={() => openSelectCoxswainModal(schedule.fields.week!)}
-                                        >
-                                            {findPerson(personId, pageData.people)!.fields.name}
-                                        </button>
-                                    ))
-                                }
-                                {
-                                    (!isEditing && !schedule.fields.coxswain?.length) && 
-                                        <button data-type-label className={'--placeholder'} />
-                                }
-                                {
-                                    (isEditing && !schedule.fields.coxswain?.length) &&
-                                        <button data-type-control onClick={() => openSelectCoxswainModal(schedule.fields.week!)}><i>+</i> Add Crew</button>
-                                }
-                            </td>
-                            <td>
-                                {
-                                    schedule.fields.crew?.length && schedule.fields.crew.map((personId, index) => (
-                                        !isEditing ? (
+                                    If(!isEditing && schedule.fields.coxswain?.length, () => (<>{
+                                        schedule.fields.coxswain!.map((personId) => (
                                             <button 
                                                 key={personId + '_view'}
                                                 data-type-label
@@ -406,54 +373,98 @@ export default function TrainingSchedulePage () {
                                             >
                                                 {findPerson(personId, pageData.people)!.fields.name}
                                             </button>
-                                        ) : (
+                                        ))
+                                    }</>)).EndIf()
+                                }
+                                {
+                                    If(isEditing && schedule.fields.coxswain?.length, () => (<>{
+                                        schedule.fields.coxswain!.map((personId) => (
                                             <button 
                                                 key={personId + '_edit'}
                                                 data-type-control
                                                 data-label-color={findPerson(personId, pageData.people)!.fields.labelColor || ''}
-                                                onClick={() => openSelectCrewMemberModal(schedule.fields.week!, index)}
+                                                onClick={() => openSelectCoxswainModal(schedule.fields.week!)}
                                             >
                                                 {findPerson(personId, pageData.people)!.fields.name}
                                             </button>
-                                        )
-                                    ))
+                                        ))
+                                    }</>)).EndIf()
                                 }
                                 {
-                                    (!schedule.fields.crew?.length && !isEditing) && 
+                                    If(!isEditing && !schedule.fields.coxswain?.length, () => (<>{
                                         <button data-type-label className={'--placeholder'} />
+                                    }</>)).EndIf()
                                 }
                                 {
-                                    ((schedule.fields.crew?.length || 0) < NUM_CREW_PER_SCHEDULE && isEditing) && (() => {
-                                        const buttons = []
-                                        let i = schedule.fields.crew?.length || 0
-                                        while (buttons.length < NUM_CREW_PER_SCHEDULE - (schedule.fields.crew?.length || 0)) {
-                                            buttons.push(<button data-type-control key={i} onClick={() => openSelectCrewMemberModal(schedule.fields.week!, i)}><i>+</i> Add Crew</button>)
-                                            i++
-                                        }
-                                        return buttons
-                                    })()
+                                    If(isEditing && !schedule.fields.coxswain?.length, () => (<>{
+                                        <button data-type-control onClick={() => openSelectCoxswainModal(schedule.fields.week!)}><i>+</i> Add Crew</button>
+                                    }</>)).EndIf()
+                                }
+                            </td>
+                            <td>
+                                {
+                                    If(schedule.fields.crew?.length, () => (<>{
+                                        schedule.fields.crew!.map((personId, index) => (
+                                            !isEditing ? (
+                                                <button 
+                                                    key={personId + '_view'}
+                                                    data-type-label
+                                                    data-label-color={findPerson(personId, pageData.people)!.fields.labelColor || ''}
+                                                >
+                                                    {findPerson(personId, pageData.people)!.fields.name}
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    key={personId + '_edit'}
+                                                    data-type-control
+                                                    data-label-color={findPerson(personId, pageData.people)!.fields.labelColor || ''}
+                                                    onClick={() => openSelectCrewMemberModal(schedule.fields.week!, index)}
+                                                >
+                                                    {findPerson(personId, pageData.people)!.fields.name}
+                                                </button>
+                                            )
+                                        ))
+                                    }</>)).EndIf()
+                                }
+                                {
+                                    If(!schedule.fields.crew?.length && !isEditing, () => (<>{
+                                        <button data-type-label className={'--placeholder'} />
+                                    }</>)).EndIf()
+                                }
+                                {
+                                    If((schedule.fields.crew?.length || 0) < NUM_CREW_PER_SCHEDULE && isEditing, () => (<>{
+                                        (() => {
+                                            const buttons = []
+                                            let i = schedule.fields.crew?.length || 0
+                                            while (buttons.length < NUM_CREW_PER_SCHEDULE - (schedule.fields.crew?.length || 0)) {
+                                                buttons.push(<button data-type-control key={i} onClick={() => openSelectCrewMemberModal(schedule.fields.week!, i)}><i>+</i> Add Crew</button>)
+                                                i++
+                                            }
+                                            return buttons
+                                        })()
+                                    }</>)).EndIf()
                                 }
                             </td>
                             <td className={'--alignCenter'}>
                                 {
-                                    !schedule.fields.scenario && !isEditing && (
+                                    If(!schedule.fields.scenario && !isEditing, () => (<>{
                                         <button data-type-label className={'--placeholder'} />
-                                    )
+                                    }</>)).EndIf()
                                 }
                                 {
-                                    schedule.fields.scenario && !isEditing && (
+                                    If(schedule.fields.scenario && !isEditing, () => (<>{
                                         <strong>{schedule.fields.scenario}</strong>
-                                    )
+                                    }</>)).EndIf()
                                 }
                                 {
-                                    !schedule.fields.scenario && isEditing && (
+                                    If(!schedule.fields.scenario && isEditing, () => (<>{
                                         <button data-type-control onClick={() => openSelectScenarioModal(schedule.fields.week!)}><i>+</i></button>
-                                    )
+                                    }</>)).EndIf()
                                 }
                                 {
-                                    schedule.fields.scenario && isEditing && (
+                                    If(schedule.fields.scenario && isEditing, () => (<>{
                                         <button data-type-control onClick={() => openSelectScenarioModal(schedule.fields.week!)}><strong>{schedule.fields.scenario}</strong></button>
-                                    )
+                                    }</>)).EndIf()
                                 }
                             </td>
                         </tr>

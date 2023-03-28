@@ -3,13 +3,14 @@ import { mapSourceFieldsToResult } from './airtable'
 import { USER } from './fieldMappings'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { valuesUnique } from './valuesUnique'
 
 export interface User {
     id: string
     fields: {
         email?: string
         password?: string
-        role?: 'User' | 'Administrator'
+        role?: '' | 'Administrator'
         name?: string
     }
 }
@@ -18,7 +19,7 @@ export async function getUser (base: Airtable.Base, email: string) {
     try {
         const result = await base(process.env.NEXT_PUBLIC_PERSON_TABLE!).select({
             filterByFormula: `SEARCH("${email}",{${USER.email}})`,
-            fields: Object.values(USER)
+            fields: valuesUnique(USER)
         }).all() as never as User[]
 
         if (result.length === 0) {
