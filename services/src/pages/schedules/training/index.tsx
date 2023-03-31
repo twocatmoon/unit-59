@@ -9,8 +9,9 @@ import BoxButtonContainer from '@/components/BoxButtonContainer'
 import Footer from '@/components/Footer'
 import { TRAINING_SCHEDULE } from '@/util/fieldMappings'
 import { useStore } from '@/stores/auth'
-import { formatWeek } from '@/util/formatWeek'
+import { formatWeekWithTime } from '@/util/formatWeek'
 import { If } from '@twocatmoon/react-template-helpers'
+import { normalizeDate } from '@/util/normalizeDate'
 
 const NUM_CREW_PER_SCHEDULE = 4
 
@@ -24,7 +25,7 @@ export default function TrainingSchedulePage () {
     const [ authState ] = useStore()
     const [ isEditing, canEdit, setEditMode ] = useEditMode()
     const [ pageData, dispatchPageData ] = useState<null | PageData>(null)
-    const [ openModal, setOpenModal ] = useState<'' | 'set_coxswain' | 'set_crew' | 'set_scenario'>('')
+    const [ openModal, setOpenModal ] = useState<'' | 'set_coxswain' | 'set_crew' | 'set_scenario' | 'set_week'>('')
     const [ currentWeek, setCurrentWeek ] = useState('')
     const [ currentIndex, setCurrentIndex ] = useState(0)
     const [ isDataDirty, setDataDirty ] = useState(false)
@@ -68,14 +69,19 @@ export default function TrainingSchedulePage () {
         setOpenModal('set_scenario')
     }
 
+    const openSelectWeekModal = (week: string) => {
+        setCurrentWeek(week)
+        setOpenModal('set_week')
+    }
+
     const addWeek = () => {
         const schedules = JSON.parse(JSON.stringify(pageData!.trainingSchedules))
-        const lastSchedule = schedules[ schedules.length - 1 ] || { fields: { week: format(new Date(), 'yyyy-MM-dd') } }
         const newSchedule = { fields: {} } as TrainingSchedule
 
-        const nextWeek = new Date(lastSchedule.fields.week)
-        nextWeek.setDate(nextWeek.getDate() + 8)
-        newSchedule.fields.week = format(nextWeek, 'yyyy-MM-dd')
+        const nextDate = new Date()
+        nextDate.setDate(nextDate.getDate() + 1)
+        newSchedule.fields.week = format(nextDate, 'yyyy-MM-dd')
+        newSchedule.fields.time = '00:00'
 
         schedules.push(newSchedule)
 
@@ -152,6 +158,29 @@ export default function TrainingSchedulePage () {
         modalEvents.trigger('close')
     }
 
+    const dateRef = useRef<HTMLInputElement>(null)
+    const timeRef = useRef<HTMLInputElement>(null)
+
+    const selectWeek = () => {
+        const schedules: TrainingSchedule[] = JSON.parse(JSON.stringify(pageData!.trainingSchedules))
+        const schedule = schedules.find((schedule: TrainingSchedule) => schedule.fields.week === currentWeek)
+        
+        if (!schedule) return
+
+        const date = dateRef.current?.value
+        const time = timeRef.current?.value
+
+        schedule.fields.week = date
+        schedule.fields.time = time
+
+        setPageData({
+            ...pageData!,
+            trainingSchedules: schedules
+        })
+
+        modalEvents.trigger('close')
+    }
+
     const isPersonSelected = (personId: Person[ 'id' ]) => {
         const schedule = pageData!.trainingSchedules.find((schedule: TrainingSchedule) => schedule.fields.week === currentWeek)
         if (!schedule) return false
@@ -167,6 +196,17 @@ export default function TrainingSchedulePage () {
         if (!schedule) return '1'
 
         return schedule.fields.scenario || '1'
+    }
+
+    const getDate = () => {
+        return format(normalizeDate(currentWeek), 'yyyy-MM-dd')
+    }
+
+    const getTime = () => {
+        const schedule = pageData!.trainingSchedules.find((schedule: TrainingSchedule) => schedule.fields.week === currentWeek)
+        if (!schedule) return '00:00'
+
+        return schedule.fields.time || '00:00'
     }
 
     const saveChanges = async () => {
@@ -310,6 +350,27 @@ export default function TrainingSchedulePage () {
                         </Modal>
                     )
                 }
+
+                if (openModal === 'set_week') {
+                    return (
+                        <Modal title='Select Date and Time'>
+                            <fieldset data-group>
+                                <input ref={dateRef} data-large type='date' defaultValue={getDate()} />
+                                <input ref={timeRef} data-large type='time' defaultValue={getTime()} />
+                            </fieldset>
+                            <br />
+                            <fieldset>
+                                <button 
+                                    data-type-primary 
+                                    onClick={() => selectWeek()} 
+                                    data-large
+                                >
+                                    Save
+                                </button>
+                            </fieldset>
+                        </Modal>
+                    )
+                }
             })()}
         >
             <Header
@@ -360,7 +421,20 @@ export default function TrainingSchedulePage () {
                                 {parseInt(format(new Date(schedule.fields.week!), 'w')) + 1}
                             </th>
                             <td>
-                                {formatWeek(schedule.fields.week!)}
+                                {
+                                    If(isEditing, () => (
+                                        <button
+                                            data-type-control
+                                            onClick={() => openSelectWeekModal(schedule.fields.week!)}
+                                        >
+                                            {formatWeekWithTime(schedule.fields.week!, schedule.fields.time!)}
+                                        </button>
+                                    ))
+                                    .Else(() => (
+                                        <>{formatWeekWithTime(schedule.fields.week!, schedule.fields.time!)}</>
+                                    ))
+                                    .EndIf()
+                                }
                             </td>
                             <td>
                                 {

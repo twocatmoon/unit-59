@@ -32,6 +32,7 @@ export const TRAINING_SCHEDULE = {
     crew: trainingScheduleFields[ 1 ],
     week: trainingScheduleFields[ 2 ],
     scenario: trainingScheduleFields[ 3 ],
+    time: trainingScheduleFields[ 4 ],
 } as const
 
 const userFields = process.env.NEXT_PUBLIC_USER_FIELD_MAPPINGS!.split(',')

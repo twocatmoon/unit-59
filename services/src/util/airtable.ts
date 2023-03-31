@@ -42,6 +42,7 @@ export interface TrainingSchedule {
         crew?: Person[ 'id' ][]
         week?: string
         scenario?: string
+        time?: string
     }
 }
 
